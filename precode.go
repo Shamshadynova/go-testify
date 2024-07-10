@@ -1,14 +1,10 @@
+// main.go
 package main
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"strconv"
 	"strings"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var cafeList = map[string][]string{
@@ -49,24 +45,7 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(answer))
 }
 
-func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-	totalCount := 4
-	count := totalCount + 1
-	city := "moscow"
-	req := httptest.NewRequest("GET", "/?count="+strconv.Itoa(count)+"&city="+city, nil)
-
-	responseRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
-
-	// Проверка статуса ответа
-	require.Equal(t, http.StatusOK, responseRecorder.Code, "Expected status OK")
-
-	// Проверка тела ответа
-	expected := strings.Join(cafeList[city], ",")
-	responseBody := responseRecorder.Body.String()
-
-	assert.NotEmpty(t, responseBody, "Response body should not be empty")
-	assert.Equal(t, expected, responseBody, "Response body should match expected value")
-	assert.Len(t, strings.Split(responseBody, ","), totalCount, "Response should contain the expected number of elements")
+func main() {
+	http.HandleFunc("/cafe", mainHandle)
+	http.ListenAndServe(":8080", nil)
 }
